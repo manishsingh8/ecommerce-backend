@@ -62,7 +62,7 @@ const userResolvers = {
       }
       const otp = generateOTP();
       user.loginOTP = otp;
-      user.loginOTPExpires = new Date(Date.now() + 60 * 1000);
+      user.loginOTPExpires = new Date(Date.now() + 6000 * 1000);
       user.otpAttempts = 0;
       user.lastOTPSentAt = new Date();
 
@@ -77,8 +77,10 @@ const userResolvers = {
       };
     },
     verifyLoginOTP: async (_, { email, otp }) => {
+      console.log("Email received:", email);
+      console.log("OTP received:", otp);
       const user = await User.findOne({ email });
-
+      console.log(user, "user");
       if (!user) {
         throw new Error("User not found");
       }
