@@ -19,7 +19,7 @@ app.use(express.json());
 createGraphQLServer(app);
 
 app.get("/", (req, res) => {
-  res.send("API Running 🚀");
+  res.send("API Running 🚀 updated");
 });
 
 module.exports = app;
