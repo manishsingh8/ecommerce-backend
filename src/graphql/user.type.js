@@ -12,13 +12,36 @@ type AuthResponse {
   user: User!
 }
 
+type OTPResponse {
+  success: Boolean!
+  message: String!
+  requiresOTP: Boolean!
+}
+
 type Query {
   me: User
 }
 
 type Mutation {
-  signup(name: String!, email: String!, password: String!): AuthResponse
-  signin(email: String!, password: String!): AuthResponse
+  signup(
+    name: String!
+    email: String!
+    password: String!
+  ): AuthResponse
+
+  signin(
+    email: String!
+    password: String!
+  ): OTPResponse
+
+  verifyLoginOTP(
+    email: String!
+    otp: String!
+  ): AuthResponse
+
+  resendLoginOTP(
+    email: String!
+  ): OTPResponse
 }
 `;
 
