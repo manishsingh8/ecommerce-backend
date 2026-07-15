@@ -1,11 +1,20 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../../models/User");
+const generateOTP = require("../../utils/generateOTP");
 
 const generateToken = (user) => {
-  return jwt.sign({ id: user._id, email: user.email }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
+  return jwt.sign(
+    {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+    },
+    process.env.JWT_SECRET,
+    {
+      expiresIn: "7d",
+    },
+  );
 };
 
 const userResolvers = {
@@ -51,6 +60,54 @@ const userResolvers = {
       if (!isMatch) {
         throw new Error("Invalid credentials");
       }
+      const otp = generateOTP();
+      user.loginOTP = otp;
+      user.loginOTPExpires = new Date(Date.now() + 60 * 1000);
+      user.otpAttempts = 0;
+      user.lastOTPSentAt = new Date();
+
+      await user.save();
+
+      console.log("Login OTP:", otp);
+
+      return {
+        success: true,
+        message: "OTP sent successfully",
+        requiresOTP: true,
+      };
+    },
+    verifyLoginOTP: async (_, { email, otp }) => {
+      const user = await User.findOne({ email });
+
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Check OTP exists
+      if (!user.loginOTP) {
+        throw new Error("OTP not found");
+      }
+
+      // Check expiry
+      if (new Date() > user.loginOTPExpires) {
+        throw new Error("OTP has expired");
+      }
+
+      // Verify OTP
+      if (user.loginOTP !== otp) {
+        user.otpAttempts += 1;
+        await user.save();
+
+        throw new Error("Invalid OTP");
+      }
+
+      // OTP verified
+
+      user.loginOTP = null;
+      user.loginOTPExpires = null;
+      user.otpAttempts = 0;
+
+      await user.save();
 
       const token = generateToken(user);
 
