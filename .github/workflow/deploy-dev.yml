@@ -1,0 +1,41 @@
+name: Deploy Backend (Dev)
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to EC2
+        uses: appleboy/ssh-action@v1.2.0
+
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+
+          script: |
+            set -e
+
+            cd ~/ecommerce-backend
+
+            echo "Fetching latest code..."
+            git fetch origin
+
+            echo "Switching to dev branch..."
+            git checkout dev
+
+            echo "Resetting to latest dev..."
+            git reset --hard origin/dev
+
+            echo "Installing dependencies..."
+            npm ci
+
+            echo "Restarting PM2..."
+            pm2 restart ecommerce-backend
+
+            echo "Deployment completed successfully!"
