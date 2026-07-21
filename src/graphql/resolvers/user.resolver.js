@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../../models/User");
 const generateOTP = require("../../utils/generateOTP");
+const sendOTPEmail = require("../../services/emailService");
 
 const generateToken = (user) => {
   return jwt.sign(
@@ -67,8 +68,11 @@ const userResolvers = {
       user.lastOTPSentAt = new Date();
 
       await user.save();
-
-      console.log("Login OTP:", otp);
+      await sendOTPEmail(
+          user.email,
+          otp,
+          user.name
+      );
 
       return {
         success: true,
