@@ -21,6 +21,10 @@ type OTPResponse {
 type Query {
   me: User
 }
+type MessageResponse {
+  success: Boolean!
+  message: String!
+}
 
 type Mutation {
   signup(

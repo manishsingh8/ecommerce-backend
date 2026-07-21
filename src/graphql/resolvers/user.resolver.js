@@ -122,6 +122,51 @@ const userResolvers = {
         user,
       };
     },
+    resendLoginOTP: async (_, { email }) => {
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  // Make sure an OTP was already generated
+  if (!user.loginOTP) {
+    throw new Error("Please login again");
+  }
+
+  // Prevent spamming (60 seconds)
+  const secondsPassed = Math.floor(
+    (Date.now() - new Date(user.lastOTPSentAt).getTime()) / 1000
+  );
+
+  if (secondsPassed < 60) {
+    throw new Error(
+      `Please wait ${60 - secondsPassed} seconds before requesting another OTP.`
+    );
+  }
+
+  // Generate a new OTP
+  const otp = generateOTP();
+
+  user.loginOTP = otp;
+  user.loginOTPExpires = new Date(Date.now() + 5 * 60 * 1000);
+  user.lastOTPSentAt = new Date();
+  user.otpAttempts = 0;
+
+  await user.save();
+
+  try {
+    await sendOTPEmail(user.email, otp, user.name);
+  } catch (error) {
+    console.error("Email Error:", error);
+    throw new Error("Unable to send OTP email");
+  }
+
+  return {
+    success: true,
+    message: "OTP resent successfully",
+  };
+    },
   },
 };
 
