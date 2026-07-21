@@ -62,7 +62,7 @@ const userResolvers = {
       }
       const otp = generateOTP();
       user.loginOTP = otp;
-      user.loginOTPExpires = new Date(Date.now() + 6000 * 1000);
+      user.loginOTPExpires = new Date(Date.now() + 5 * 60 * 1000); // otp expires in 5 min
       user.otpAttempts = 0;
       user.lastOTPSentAt = new Date();
 
