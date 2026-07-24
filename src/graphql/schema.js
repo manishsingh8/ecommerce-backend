@@ -4,7 +4,7 @@ const userTypeDefs = require("./user.type");
 const productTypeDefs = require("./product.type");
 const userResolvers = require("./resolvers/user.resolver");
 const productResolvers = require("./resolvers/product.resolver");
-const auth = require("../middleware/auth");
+const auth = require("../middleware/authenticate");
 
 const createGraphQLServer = async (app) => {
   const server = new ApolloServer({
