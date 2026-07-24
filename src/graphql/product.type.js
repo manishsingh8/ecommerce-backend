@@ -1,4 +1,4 @@
-const userTypeDefs = `#graphql
+const productTypeDefs = `#graphql
 
 type Product {
     id: ID!
